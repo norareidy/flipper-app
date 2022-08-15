@@ -13,7 +13,6 @@ import (
 )
 
 func TestAddVersion(t *testing.T) {
-	//test code
 	uri := os.Getenv("MONGODB_URI")
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
@@ -33,14 +32,7 @@ func TestAddVersion(t *testing.T) {
 }
 
 func TestAddDuplicateVersion(t *testing.T) {
-	//test code
 	got := checkVersionNumbers("1.12", "1.12")
-	/*uri := os.Getenv("MONGODB_URI")
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}*/
-	//_, got := client.Database("version_flippers").Collection("versions").BulkWrite(context.TODO(), createWriteModel("docs-golang", "1.12", "1.12"))
 
 	if got != "Warning: your old 'current' value 1.12 and new 'current' value 1.12 are the same.\nConfirm by typing '1.12' again, or type a new 'current' version number:" {
 		t.Error("Didn't catch duplicate versions.")
@@ -50,13 +42,7 @@ func TestAddDuplicateVersion(t *testing.T) {
 
 func TestAddDWeirdVersion(t *testing.T) {
 	got := checkVersionNumbers("5.3", "1.12")
-	/*uri := os.Getenv("MONGODB_URI")
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
 
-	_, got := client.Database("version_flippers").Collection("versions").BulkWrite(context.TODO(), updateVersions("docs-golang", "4.2", "1.13"))*/
 	if got != "Warning: your old 'current' value 1.12 and new 'current' value 5.30 seem far apart.\nConfirm by typing '5.30' again, or type a new 'current' version number:" {
 		t.Error("Didn't catch abnormal version number.")
 	}
