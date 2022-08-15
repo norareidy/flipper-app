@@ -3,6 +3,7 @@ module go-quickstart
 go 1.18
 
 require (
+	github.com/DrSmithFr/go-console v0.0.0-20220614175932-447180b34cc6
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/joho/godotenv v1.4.0

@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/DrSmithFr/go-console/pkg/style"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,6 +19,8 @@ import (
 func getVersionInfo(client *mongo.Client, session mongo.Session, coll *mongo.Collection) {
 
 	err := mongo.WithSession(context.TODO(), session, func(sctx mongo.SessionContext) error {
+		style.NewConsoleStyler().Title("Starting version updater .......")
+
 		sctx.StartTransaction()
 		defer func() {
 			session.AbortTransaction(sctx)

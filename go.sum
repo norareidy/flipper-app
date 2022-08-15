@@ -1,3 +1,5 @@
+github.com/DrSmithFr/go-console v0.0.0-20220614175932-447180b34cc6 h1:12T7QoqNhCIlS+9uGTZ0ZSY9M3w2r+2VozSPfI/zYGA=
+github.com/DrSmithFr/go-console v0.0.0-20220614175932-447180b34cc6/go.mod h1:cqaBCFMNXeRv/xS1pWRE2fAnPtztFV+pLXMPRwe/JQo=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
