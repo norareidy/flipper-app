@@ -23,9 +23,8 @@ func getVersionInfo(client *mongo.Client, session mongo.Session, coll *mongo.Col
 			session.AbortTransaction(sctx)
 		}()
 
-		var repo string
-		fmt.Print("Enter your repo name\n\t- 'docs-node', for example: ")
-		fmt.Scan(&repo)
+		fmt.Println("Enter your repo name. Repo options:")
+		repo := repoOptions(coll, sctx)
 
 		var current string
 		fmt.Print("Enter what you'd like the new 'current' version number to be\n\t- '1.7', for example: ")
@@ -45,16 +44,36 @@ func getVersionInfo(client *mongo.Client, session mongo.Session, coll *mongo.Col
 		if err = printInfo(repo, sctx, coll); err != nil {
 			panic(err)
 		}
-		/*if results.ModifiedCount != 3 {
-			panic(err)
-		}*/
-
 		askToCommit(session, sctx)
 		return nil
 	})
 	if err != nil {
 		panic(err)
 	}
+}
+
+func repoOptions(coll *mongo.Collection, sctx mongo.SessionContext) string {
+	var repo string
+	var allVersions []Versions
+	var allRepos []string
+	cursor, err := coll.Find(sctx, bson.D{{}})
+	if err = cursor.All(sctx, &allVersions); err != nil {
+		panic(err)
+	}
+	for _, r := range allVersions {
+		fmt.Println(r.RepoName)
+		allRepos = append(allRepos, r.RepoName)
+	}
+	fmt.Print("Type your repo choice: ")
+	fmt.Scan(&repo)
+
+	for _, r := range allRepos {
+		if r == repo {
+			return repo
+		}
+	}
+	fmt.Println("ERROR: your input is not a repo option. Try again.\n---------------------------------------")
+	return repoOptions(coll, sctx)
 }
 
 func createWriteModel(repo string, current string, oldCurrent string) []mongo.WriteModel {
@@ -92,18 +111,18 @@ func checkVersionNumbers(c1 string, c2 string) string {
 	oldCurrent, err := strconv.ParseFloat(strings.TrimPrefix(c2, "v"), 32)
 
 	if oldCurrent > current && (math.Mod(current, 1) != 0) {
-		return fmt.Sprintf("Warning: your old 'current' value %.2f seems to be greater than your new 'current' value %.2f.\nConfirm by typing '%.2f' again, or type a new 'current' version number:",
-			oldCurrent, current, current)
+		return fmt.Sprintf("Warning: your old 'current' value %.2f seems to be greater than your new 'current' value %s.\nConfirm by typing '%s' again, or type a new 'current' version number:",
+			oldCurrent, c1, c1)
 	}
 	if math.Abs(oldCurrent-current) > 0.3 {
-		return fmt.Sprintf("Warning: your old 'current' value %.2f and new 'current' value %.2f seem far apart.\nConfirm by typing '%.2f' again, or type a new 'current' version number:",
-			oldCurrent, current, current)
+		return fmt.Sprintf("Warning: your old 'current' value %.2f and new 'current' value %s seem far apart.\nConfirm by typing '%s' again, or type a new 'current' version number:",
+			oldCurrent, c1, c1)
 	}
 	if oldCurrent == current {
-		return fmt.Sprintf("Warning: your old 'current' value %.2f and new 'current' value %.2f are the same.\nConfirm by typing '%.2f' again, or type a new 'current' version number:",
-			oldCurrent, current, current)
+		return fmt.Sprintf("Warning: your old 'current' value %.2f and new 'current' value %s are the same.\nConfirm by typing '%s' again, or type a new 'current' version number:",
+			oldCurrent, c1, c1)
 	}
-	return fmt.Sprintf("New current version number %.2f passes validation, but you can still change it.\nConfirm by typing '%.2f' again, or type a new 'current' version number:", current, current)
+	return fmt.Sprintf("New current version number %s passes validation, but you can still change it.\nConfirm by typing '%s' again, or type a new 'current' version number:", c1, c1)
 }
 
 func printInfo(repo string, sctx mongo.SessionContext, coll *mongo.Collection) error {
