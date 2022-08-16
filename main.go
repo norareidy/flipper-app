@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -35,7 +36,7 @@ func main() {
 
 	var uri string
 	if uri = os.Getenv("MONGODB_URI"); uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+		panic("You must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
 
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
@@ -47,16 +48,42 @@ func main() {
 			panic(err)
 		}
 	}()
+
 	session, err := client.StartSession()
 	if err != nil {
 		panic(err)
 	}
-
+	//b := Branch{Name: "efef", Active: true}
 	defer func() {
 		session.EndSession(context.TODO())
 	}()
 
 	coll := client.Database("version_flippers").Collection("versions")
-	getVersionInfo(client, session, coll)
 
+	err = mongo.WithSession(context.TODO(), session, func(sctx mongo.SessionContext) error {
+		sctx.StartTransaction()
+		defer func() {
+			session.AbortTransaction(sctx)
+		}()
+
+		io.Title("Starting version updater .......")
+		checkOtherTransactions(coll, sctx)
+
+		repo, current, oldCurrent := collectInputAndValidate(sctx, coll)
+		previewAndUpdate(repo, current, oldCurrent, sctx, session, coll)
+		return nil
+	})
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func checkOtherTransactions(coll *mongo.Collection, sctx mongo.SessionContext) {
+	var updatedDoc bson.D
+	err := coll.FindOneAndUpdate(sctx, bson.D{{"repoName", "docs-golang"}}, bson.D{{"$set", bson.D{{"repoName", "docs-golang"}}}}).Decode(&updatedDoc)
+	if err != nil {
+		io.Error("Error, someone else may have a transaction open.")
+		panic(err)
+	}
 }
