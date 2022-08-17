@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Versions struct {
+type Repo struct {
 	RepoName   string   `bson:"repoName"`
 	BranchInfo []Branch `bson:"branches"`
 }
@@ -53,13 +53,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//b := Branch{Name: "efef", Active: true}
+
 	defer func() {
 		session.EndSession(context.TODO())
 	}()
 
 	coll := client.Database("version_flippers").Collection("versions")
-
 	err = mongo.WithSession(context.TODO(), session, func(sctx mongo.SessionContext) error {
 		sctx.StartTransaction()
 		defer func() {

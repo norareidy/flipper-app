@@ -28,7 +28,7 @@ func collectInputAndValidate(sctx mongo.SessionContext, coll *mongo.Collection) 
 }
 
 func repoOptions(coll *mongo.Collection, sctx mongo.SessionContext) []string {
-	var allVersions []Versions
+	var allVersions []Repo
 	var allRepos []string
 
 	cursor, err := coll.Find(sctx, bson.D{{}})
@@ -79,7 +79,7 @@ func getCurrentInput() string {
 }
 
 func getOldCurrent(coll *mongo.Collection, sctx mongo.SessionContext, repo string) string {
-	var version Versions
+	var version Repo
 	err := coll.FindOne(sctx, bson.D{{"repoName", repo}}).Decode(&version)
 	if err != nil {
 		panic(err)
